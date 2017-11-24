@@ -5,7 +5,7 @@ import random
 import numpy as np
 import pandas as pd
 import plotly
-from plotly.graph_objs import Layout, Scatter, Scatter3d
+from plotly.graph_objs import Figure, Layout, Scatter, Scattergeo
 
 from cluster import Cluster, Point, distance
 
@@ -14,10 +14,10 @@ This program is an implementation of K-means clustering algorithm
 which reads the restaurants datasets to find the best location
 '''
 #global variables for configuration
-dataset_file = "./restaurants-data.csv"
+dataset_file = "./restaurant_ds_sample.csv"
 clusters_count = 3
 tolerance = 0.2
-
+drawMap=False
 
 
 def make_points(list_x, list_y):
@@ -72,7 +72,7 @@ def kmeans(points):
             max_diff = max(max_diff,diff)
         
         if max_diff < tolerance:
-            print("converged after %s iterations", i)
+            print("Total iterations to converge %s", i)
             break
     return clusters
 
@@ -84,34 +84,63 @@ def plot_graph(data):
             cluster_data.append(point.coords)
         trace = {}
         centroid = {}
-        trace['x'], trace['y'] = zip(*cluster_data)
+        #trace cluster points
         trace['mode'] = 'markers'
         trace['marker'] = {}
         trace['marker']['symbol'] = i
-        trace['marker']['size'] = 12
+        trace['marker']['size'] = 5
         trace['name'] = "Cluster-"+str(i)
-        tracelist.append(Scatter(**trace))
+        if drawMap :
+            trace['lat'], trace['lon'] = zip(*cluster_data)
+            tracelist.append(Scattergeo(**trace))
+        else:
+            trace['x'], trace['y'] = zip(*cluster_data)
+            tracelist.append(Scatter(**trace))
         
-        centroid['x'] = [c.centroid.coords[0]]
-        centroid['y'] = [c.centroid.coords[1]]
+        #draw centroids
         centroid['mode'] = 'markers'
         centroid['marker'] = {}
         centroid['marker']['symbol'] = i
         centroid['marker']['color'] = 'rgb(200,10,10)'
         centroid['name'] = "Centroid-"+str(i)
-        tracelist.append(Scatter(**centroid))
+        
+        if drawMap:
+            centroid['lat'] = [c.centroid.coords[0]]
+            centroid['lon'] = [c.centroid.coords[1]]
+            tracelist.append(Scattergeo(**centroid))
+        else:
+            centroid['x'] = [c.centroid.coords[0]]
+            centroid['y'] = [c.centroid.coords[1]]
+            tracelist.append(Scatter(**centroid))
+        
     
-    title = "K-means clustering with %s clusters" % str(len(data))
-    plotly.offline.plot({
-        "data" : tracelist,
-        "layout" : Layout(title=title)
-    })
+    
+    layout = Layout(
+        title = "K-means clustering with %s clusters" % str(len(data)),
+        geo = dict(
+            resolution = 100,
+            scope = 'usa',
+            showframe = False,
+            showcoastlines = True,
+            showland = True,
+            landcolor = "rgb(229, 229, 229)",
+            countrycolor = "rgb(255, 255, 255)" ,
+            coastlinecolor = "rgb(255, 255, 255)",
+            projection = dict(
+                type = 'Mercator'
+            )
+        )
+    ) if drawMap else Layout (
+        title = "K-means clustering with %s clusters" % str(len(data))
+    )
+    fig = Figure(layout=layout, data=tracelist)
+    plotly.offline.plot(fig, validate=False)
 
 
 
 def main():
     print("in main")
-    labels, points = read_from_csv("premise_name", "latitude", "longitude")
+    labels, points = read_from_csv("name", "latitude", "longitude")
     clusters = kmeans(points)
     plot_graph(clusters)
 
