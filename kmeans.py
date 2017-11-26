@@ -112,9 +112,7 @@ def plot_graph(data):
             centroid['x'] = [c.centroid.coords[0]]
             centroid['y'] = [c.centroid.coords[1]]
             tracelist.append(Scatter(**centroid))
-        
-    
-    
+       
     layout = Layout(
         title = "K-means clustering with %s clusters" % str(len(data)),
         geo = dict(
@@ -135,7 +133,6 @@ def plot_graph(data):
     )
     fig = Figure(layout=layout, data=tracelist)
     plotly.offline.plot(fig, validate=False)
-
 
 
 def main():

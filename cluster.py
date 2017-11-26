@@ -45,7 +45,7 @@ class Cluster(object):
 def distance(a, b):
     '''
     Caculate the Euclidean distance between points a and b as
-    distance(x,y) = sqrt(sum(pow(x-y,2)))
+    distance(a,b) = sqrt(sum(pow(a-b,2)))
     '''
     diff = 0.0
     for i in range(a.n):
