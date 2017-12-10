@@ -30,20 +30,23 @@ def make_points(list_x, list_y):
     return p
     
 
-def read_from_csv(col1, col2, col3):
+def read_from_csv(col_list):
     '''
     returns a list of points containing col1 as labels, and col2,col3
     as coordinate (x,y) from the dataset 
     '''
     csv_data = pd.read_csv(dataset_file)
     csv_data.head()
-    list1 = csv_data[col1].values
-    list2 = csv_data[col2].values
-    list3 = csv_data[col3].values
+    wts_list = []
+    labels = csv_data[col_list[0]].values
+    list_lat = csv_data[col_list[1]].values
+    list_lon = csv_data[col_list[2]].values
+    if len(col_list) > 3 :
+        wts_list = csv_data[col_list[4]].values
     #make points list
-    p = make_points(list2, list3)
+    p = make_points(list_lat, list_lon)
     #print(p)
-    return list1, p
+    return labels, p
 
 
 def kmeans(points):
@@ -72,11 +75,12 @@ def kmeans(points):
             max_diff = max(max_diff,diff)
         
         if max_diff < tolerance:
-            print("Total iterations to converge %s", i)
+            print("Total iterations to converge ", i)
             break
     return clusters
 
 def plot_graph(data):
+    print(data)
     tracelist = []
     for i,c in enumerate(data):
         cluster_data = []
@@ -89,7 +93,7 @@ def plot_graph(data):
         trace['marker'] = {}
         trace['marker']['symbol'] = i
         trace['marker']['size'] = 5
-        trace['name'] = "Cluster-"+str(i)
+        trace['name'] = str(i)
         if drawMap :
             trace['lat'], trace['lon'] = zip(*cluster_data)
             tracelist.append(Scattergeo(**trace))
@@ -102,7 +106,7 @@ def plot_graph(data):
         centroid['marker'] = {}
         centroid['marker']['symbol'] = i
         centroid['marker']['color'] = 'rgb(200,10,10)'
-        centroid['name'] = "Centroid-"+str(i)
+        centroid['name'] = "Centroid "+str(i)
         
         if drawMap:
             centroid['lat'] = [c.centroid.coords[0]]
@@ -114,22 +118,22 @@ def plot_graph(data):
             tracelist.append(Scatter(**centroid))
        
     layout = Layout(
-        title = "K-means clustering with %s clusters" % str(len(data)),
+        title = "Found %s best locations" % str(len(data)),
         geo = dict(
             resolution = 100,
             scope = 'usa',
-            showframe = False,
+            showframe = True,
             showcoastlines = True,
             showland = True,
             landcolor = "rgb(229, 229, 229)",
             countrycolor = "rgb(255, 255, 255)" ,
             coastlinecolor = "rgb(255, 255, 255)",
             projection = dict(
-                type = 'Mercator'
+                type = 'albers usa'
             )
         )
     ) if drawMap else Layout (
-        title = "K-means clustering with %s clusters" % str(len(data))
+        title = "Found %s best locations" % str(len(data))
     )
     fig = Figure(layout=layout, data=tracelist)
     plotly.offline.plot(fig, validate=False)
@@ -137,7 +141,7 @@ def plot_graph(data):
 
 def main():
     print("in main")
-    labels, points = read_from_csv("name", "latitude", "longitude")
+    labels, points = read_from_csv(["name", "latitude", "longitude"])
     clusters = kmeans(points)
     plot_graph(clusters)
 
