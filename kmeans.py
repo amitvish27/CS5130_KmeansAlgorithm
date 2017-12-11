@@ -14,22 +14,21 @@ This program is an implementation of K-means clustering algorithm
 which reads the restaurants datasets to find the best location
 '''
 #global variables for configuration
-dataset_file = "./restaurant_ds_sample.csv"
+dataset_file = "./dataset.csv"
 ds_col_list = ["name", "latitude", "longitude"]
 clusters_count = 3
 tolerance = 0.2
 drawMap = False
 
 
-def make_points(list_x, list_y):
+def make_points(list_x, list_y, wt_list):
     '''
-    create point objects from 2 lists and return list with coordinates 
+    create point objects from 3 lists and return list with coordinates 
     '''
     p = []
-    for x,y in zip(list_x, list_y) :
-        p.append(Point([x, y]))
+    for x,y,wt in zip(list_x, list_y, wt_list) :
+        p.append(Point([x, y], wt))
     return p
-    
 
 def read_from_csv(col_list):
     '''
@@ -42,14 +41,24 @@ def read_from_csv(col_list):
     labels = csv_data[col_list[0]].values
     list_lat = csv_data[col_list[1]].values
     list_lon = csv_data[col_list[2]].values
-    if len(col_list) > 3 :
-        wts_list = csv_data[col_list[4]].values
+    p=[]
+    wts_list=[]
+    if len(col_list) == 4 :
+        wts_list = csv_data[col_list[3]].values
+    else:
+        wts_list = [1 for _ in csv_data[col_list[0]].values]    
     #make points list
-    p = make_points(list_lat, list_lon)
+    print(wts_list)
+    p = make_points(list_lat, list_lon, wts_list)
+    
     return labels, p
 
 
 def kmeans(points):
+    '''
+    This function applies kmeans algorithm to sets of points and
+    returns set of points defined for n no. of cluster
+    '''
     initial = random.sample(points,clusters_count)
     clusters = [Cluster([p]) for p in initial]
     i=0
@@ -79,6 +88,9 @@ def kmeans(points):
     return clusters
 
 def plot_gmap(data):
+    '''
+    method to plot clusters on map using google map api
+    '''
     from bokeh.io import output_file, output_notebook, show
     from bokeh.models import (
     GMapPlot, GMapOptions, ColumnDataSource, Circle, LogColorMapper, BasicTicker, ColorBar,

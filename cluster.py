@@ -1,11 +1,13 @@
 import math
+import numpy as np
 
 class Point(object):
     '''
     A point object with coords(x, y) and n dimension
     '''
-    def __init__(self, coords):
+    def __init__(self, coords, wt):
         self.coords = coords
+        self.wt = wt
         self.n = len(coords)
 
     def __repr__(self):
@@ -30,7 +32,8 @@ class Cluster(object):
         '''
         count = len(self.points)
         coords = [p.coords for p in self.points]
-        centroid = Point([math.fsum(lst)/count for lst in zip(*coords)])
+        wt = np.median([p.wt for p in self.points])
+        centroid = Point([math.fsum(lst)/count for lst in zip(*coords)],wt)
         return centroid
 
     def update(self, points):
@@ -49,5 +52,5 @@ def distance(a, b):
     '''
     diff = 0.0
     for i in range(a.n):
-        diff += pow((a.coords[i]-b.coords[i]),2)
+        diff += pow(a.wt*(a.coords[i]-b.coords[i]),2)
     return math.sqrt(diff)
