@@ -17,7 +17,7 @@ which reads the restaurants datasets to find the best location
 dataset_file = "./restaurant_ds_sample.csv"
 clusters_count = 3
 tolerance = 0.2
-drawMap=False
+drawMap = False
 
 
 def make_points(list_x, list_y):
@@ -79,9 +79,65 @@ def kmeans(points):
             break
     return clusters
 
+def plot_gmap(data):
+    from bokeh.io import output_file, output_notebook, show
+    from bokeh.models import (
+    GMapPlot, GMapOptions, ColumnDataSource, Circle, LogColorMapper, BasicTicker, ColorBar,
+    Range1d, PanTool, WheelZoomTool, BoxSelectTool
+    )
+    from bokeh.models.mappers import ColorMapper, LinearColorMapper
+    from bokeh.palettes import Viridis5
+
+    latlist = [] #
+    lonlist = []
+    sizelist = []
+    colorlist = []
+    
+    for i,c in enumerate(data):
+        cluster_data = []
+        for point in c.points:
+            cluster_data.append(point.coords)
+        
+        for ind,item in enumerate(cluster_data):
+            latlist.append(item[0])
+            lonlist.append(item[1])
+            sizelist.append(10)
+            colorlist.append(50*(i+1))
+        #add all centroids
+        latlist.append(c.centroid.coords[0])
+        lonlist.append(c.centroid.coords[1])
+        sizelist.append(20)
+        colorlist.append(200)
+    
+    source = ColumnDataSource(
+        data = dict(
+            lat=latlist,
+            lon=lonlist,
+            size=sizelist,
+            color=colorlist
+        )
+    )
+    
+    mapcenter_lat = np.median(latlist)
+    mapcenter_lon = np.median(lonlist)
+    map_options = GMapOptions(lat=mapcenter_lat, lng=mapcenter_lon, map_type="roadmap", zoom=4)
+
+    plot = GMapPlot(x_range=Range1d(), y_range=Range1d(), map_options=map_options)
+    plot.title.text = "Found %s best locations" % str(len(data))
+    plot.api_key = "AIzaSyBYrbp34OohAHsX1cub8ZeHlMEFajv15fY"
+    
+    color_mapper = LinearColorMapper(palette=Viridis5)
+    circle = Circle(x="lon", y="lat", size="size", fill_color={'field': 'color', 'transform': color_mapper}, fill_alpha=0.75, line_color=None)
+    plot.add_glyph(source, circle)
+    plot.add_tools(PanTool(), WheelZoomTool(), BoxSelectTool())
+    output_file("gmap_plot.html")
+    show(plot)
+
+
+### For plotting graph and map working
 def plot_graph(data):
     print(data)
-    tracelist = []
+    tracelist = [] #
     for i,c in enumerate(data):
         cluster_data = []
         for point in c.points:
@@ -144,6 +200,7 @@ def main():
     labels, points = read_from_csv(["name", "latitude", "longitude"])
     clusters = kmeans(points)
     plot_graph(clusters)
+    plot_gmap(clusters)
 
 
 if __name__ == "__main__":
