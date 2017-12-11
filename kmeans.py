@@ -15,6 +15,7 @@ which reads the restaurants datasets to find the best location
 '''
 #global variables for configuration
 dataset_file = "./restaurant_ds_sample.csv"
+ds_col_list = ["name", "latitude", "longitude"]
 clusters_count = 3
 tolerance = 0.2
 drawMap = False
@@ -45,14 +46,12 @@ def read_from_csv(col_list):
         wts_list = csv_data[col_list[4]].values
     #make points list
     p = make_points(list_lat, list_lon)
-    #print(p)
     return labels, p
 
 
 def kmeans(points):
     initial = random.sample(points,clusters_count)
     clusters = [Cluster([p]) for p in initial]
-    #print("clusters",clusters)
     i=0
     while True:
         i+=1
@@ -136,7 +135,6 @@ def plot_gmap(data):
 
 ### For plotting graph and map working
 def plot_graph(data):
-    print(data)
     tracelist = [] #
     for i,c in enumerate(data):
         cluster_data = []
@@ -197,8 +195,9 @@ def plot_graph(data):
 
 def main():
     print("in main")
-    labels, points = read_from_csv(["name", "latitude", "longitude"])
+    labels, points = read_from_csv(ds_col_list)
     clusters = kmeans(points)
+    print(clusters)
     plot_graph(clusters)
     plot_gmap(clusters)
 

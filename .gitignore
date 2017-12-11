@@ -3,3 +3,4 @@ __pycache__/
 temp-plot.html
 TutorialMap.ipynb
 TutorialMap-checkpoint.ipynb
+.ipynb_checkpoints/
