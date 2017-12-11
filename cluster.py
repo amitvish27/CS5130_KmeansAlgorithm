@@ -29,6 +29,7 @@ class Cluster(object):
 
     def calc_centroid(self):
         '''
+        Calculate current centroid
         '''
         count = len(self.points)
         coords = [p.coords for p in self.points]
