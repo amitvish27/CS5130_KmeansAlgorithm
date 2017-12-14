@@ -59,6 +59,7 @@ def kmeans(points):
     This function applies kmeans algorithm to sets of points and
     returns set of points defined for n no. of cluster
     '''
+    #select and initialize random points for clusters
     initial = random.sample(points,clusters_count)
     clusters = [Cluster([p]) for p in initial]
     i=0
